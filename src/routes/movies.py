@@ -22,6 +22,7 @@ import math
 
 router = APIRouter()
 
+
 @router.get("/movies/", response_model=MovieListResponseSchema)
 async def read_movies(
     request: Request,
@@ -55,6 +56,7 @@ async def read_movies(
             status_code=404,
             detail="No movies found."
         )
+
     def build_url(page_number: int) -> str:
         return f"{base_url}?page={page_number}&per_page={per_page}"
 

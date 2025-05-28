@@ -4,6 +4,7 @@ from datetime import date
 from typing import List, Optional
 from fastapi import Query
 
+
 class MovieDetailResponseSchema(BaseModel):
     id: int
     name: str
@@ -22,6 +23,7 @@ class MovieDetailResponseSchema(BaseModel):
     class Config:
         orm_mode = True
 
+
 class MovieCreate(MovieDetailResponseSchema):
     pass
 
@@ -37,7 +39,6 @@ class MovieListResponseSchema(BaseModel):
     next_page: Optional[str]
     total_pages: int
     total_items: int
-
 
     class Config:
         orm_mode = True

@@ -24,8 +24,17 @@ class MovieDetailResponseSchema(BaseModel):
         orm_mode = True
 
 
-class MovieCreate(MovieDetailResponseSchema):
-    pass
+class MovieCreate(BaseModel):
+    name: str
+    date: date
+    score: float
+    genre: str
+    overview: str
+    crew: str
+    orig_title: str
+    orig_lang: str
+    budget: float
+    country: str
 
 
 class PaginationParams(BaseModel):

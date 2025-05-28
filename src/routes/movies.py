@@ -22,7 +22,6 @@ import math
 
 router = APIRouter()
 
-
 @router.get("/movies/", response_model=MovieListResponseSchema)
 async def read_movies(
     request: Request,
@@ -32,22 +31,16 @@ async def read_movies(
     page = pagination.page
     per_page = pagination.per_page
 
-    if page <= 0:
-        raise HTTPException(
-            status_code=400,
-            detail="page must be >= 1"
-        )
     if per_page <= 0:
         raise HTTPException(
-            status_code=400,
-            detail="per_page must be >= 1"
+            status_code=400, detail="per_page must be >= 1"
         )
 
     total_items_result = await db.execute(
         select(func.count()).select_from(MovieModel)
     )
     total_items = total_items_result.scalar_one()
-    total_pages = max(math.ceil(total_items / per_page), 1)
+    total_pages = math.ceil(total_items / per_page)
 
     result = await db.execute(
         select(MovieModel)
@@ -57,24 +50,24 @@ async def read_movies(
     movies = result.scalars().all()
 
     base_url = str(request.url).split("?")[0]
-    query_params = request.query_params.multi_items()
+    if not movies:
+        raise HTTPException(
+            status_code=404,
+            detail="No movies found."
+        )
 
-    def build_page_url(target_page: int) -> str | None:
-        if target_page < 1 or target_page > total_pages:
-            return None
-        params = [(k, v) for k, v in query_params if k not in {"page"}]
-        params.append(("page", str(target_page)))
-        return f"{base_url}?{'&'.join(f'{k}={v}' for k, v in params)}"
 
-    return MovieListResponseSchema(
-        movies=movies,
-        page=page,
-        per_page=per_page,
-        total_pages=total_pages,
-        total_items=total_items,
-        next_page_url=build_page_url(page + 1),
-        prev_page_url=build_page_url(page - 1)
-    )
+    def build_url(page_number: int) -> str:
+        return f"{base_url}?page={page_number}&per_page={per_page}"
+
+    return {
+
+        "prev_page": build_url(page - 1) if page > 1 else None,
+        "next_page": build_url(page + 1) if page < total_pages else None,
+        "total_pages": total_pages,
+        "total_items": total_items,
+        "movies": movies
+    }
 
 
 @router.get(
